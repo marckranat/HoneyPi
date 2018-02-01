@@ -63,5 +63,11 @@ sed -i -e "$SED_CMD" /etc/wpa_supplicant/wpa_supplicant.conf
 
 #connect to the configured network
 echo "Connecting to ${net_ssid}..."
-wpa_cli -i wlan0 reconfigure
+result=`wpa_cli -i wlan0 reconfigure`
+echo $result
 
+if [ "$result" == "OK" ]; then
+	echo -n "Assigned address: "
+	ifconfig | grep inet | head -n 1 | xargs
+	echo
+fi
