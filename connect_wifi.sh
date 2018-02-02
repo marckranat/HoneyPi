@@ -68,6 +68,6 @@ echo $result
 
 if [ "$result" == "OK" ]; then
 	echo -n "Assigned address: "
-	ifconfig | grep inet | head -n 1 | xargs
+	ifconfig wlan0 | grep inet | head -n 1 | xargs
 	echo
 fi
