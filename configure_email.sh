@@ -7,25 +7,32 @@ if [ $UID -ne 0 ]; then
 fi
 
 #outgoing e-mail server address
-mailhub=$(whiptail --inputbox "Provide outgoing e-mail server address [smtp.gmail.com]" 20 60 3>&1 1>&2 2>&3)
-if [ -z "$mailhub" ]; then
-	mailhub="smtp.gmail.com"
+mailhub=$(whiptail --inputbox "Provide outgoing e-mail server address" 10 60 "smtp.gmail.com" 3>&1 1>&2 2>&3)
+if [ -z $mailhub ]; then
+	exit 1 #cancel has been selected
 fi
 
 #outgoing server port
-port=$(whiptail --inputbox "Provide outgoing e-mail server port [587]" 20 60 3>&1 1>&2 2>&3)
-if [ -z "$port" ]; then
-	port="587"
+port=$(whiptail --inputbox "Provide outgoing e-mail server port" 10 60 "587" 3>&1 1>&2 2>&3)
+if [ -z $port ]; then
+	exit 1 #cancel has been selected
 fi
 
 #enable STARTTLS
-starttls_yesno=$(whiptail --yesno "Enable STARTTLS ?" 0 0 3>&1 1>&2 2>&3)
+whiptail --yesno "Enable STARTTLS ?" 10 60
+starttls_yesno=$?
 
 #username
-username=$(whiptail --inputbox "Provide username of your e-mail account" 20 60 3>&1 1>&2 2>&3)
+username=$(whiptail --inputbox "Provide username of your e-mail account" 10 60 3>&1 1>&2 2>&3)
+if [ -z $username ]; then
+	exit 1 #cancel has been selected
+fi
 
 #passsword
-password=$(whiptail --inputbox "Provide password for your e-mail account" 20 60 3>&1 1>&2 2>&3)
+password=$(whiptail --inputbox "Provide password for your e-mail account" 10 60 3>&1 1>&2 2>&3)
+if [ -z $password ]; then
+	exit 1 #cancel has been selected
+fi
 
 #setup SSMTP configuration
 function setup_ssmtp_conf() {
@@ -44,9 +51,13 @@ setup_ssmtp_conf "AuthUser" "$username"
 setup_ssmtp_conf "AuthPass" "$password"
 
 #test configuration
-test_yesno=$(whiptail --yesno "Do you want to test the configured e-mail client ?" 0 0 3>&1 1>&2 2>&3)
+whiptail --yesno "Do you want to test the configured e-mail client ?" 10 60
+test_yesno=$?
 if [ $test_yesno ]; then
-	email=$(whiptail --inputbox "Provide password for your e-mail account" 20 60 3>&1 1>&2 2>&3)
+	email=$(whiptail --inputbox "Provide an e-mail address where the message will be send" 10 60 3>&1 1>&2 2>&3)
+	if [ -z $email ]; then
+		exit 1 #cancel has been selected
+	fi
 	echo "Sending a test message to $email..."
 	echo "test from RPi" | ssmtp $email
 	echo "Done"
