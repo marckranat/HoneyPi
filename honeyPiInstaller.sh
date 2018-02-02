@@ -51,21 +51,7 @@ check=1
 
 case $OPTION in
 	email)
-		emailaddy=$(whiptail --inputbox "Mmmkay. Email is a pain to set up. We have defaults for gmail so use that if you have it. What's your email address?" 20 60 3>&1 1>&2 2>&3)
-		sed -i "s/xemailx/$emailaddy/g" ssmtp.conf
-		cp ssmtp.conf /etc/ssmtp/ssmtp.conf
-		check=30
-		whiptail --msgbox "Now, create an 'App Password' for your gmail account (google it if you don't know how). Because we don't want to assign your password to any variables, you have to manually edit the smtp configuration file on the next screen. 'AuthUser' is the first part of your email address before the @. Save and exit the editor and I'll see you back here." 20 60
-		pico /etc/ssmtp/ssmtp.conf
-		whiptail --msgbox "Welcome back! Well Done! Here comes a test message to your email address..." 20 60
-		echo "test message from honeyPi" | ssmtp -vvv $emailaddy
-		if whiptail --yesno "Cool. Now wait a couple minutes and see if that test message shows up. 'Yes' to continue or 'No' to exit and mess with your smtp config." 20 60
- 		then
-  			echo "Continue"
-		else
-			exit 1
- 		fi
-
+		( "configure_email.sh" )
 	;;
 	script)
 		externalscript=$(whiptail --inputbox "Enter the full path and name of the script you would like to execute when an alert is triggered:" 20 60 3>&1 1>&2 2>&3)
@@ -79,9 +65,11 @@ case $OPTION in
 	;;
 esac
 
+( "connect_wifi.sh" )
+
 ###update vars in configuration files
 sed -i "s/xhostnamex/$sneakyname/g" psad.conf
-sed -i "s/xemailx/$emailaddy/g" psad.conf
+#sed -i "s/xemailx/$emailaddy/g" psad.conf
 sed -i "s/xenablescriptx/$enablescript/g" psad.conf
 sed -i "s/xalertingmethodx/$alertingmethod/g" psad.conf
 sed -i "s=xexternalscriptx=$externalscript=g" psad.conf
@@ -107,4 +95,3 @@ cp mattshoneypot.py /root/honeyPi
 python /root/honeyPi/mattshoneypot.py &
 ifconfig
 printf "\n \n ok. should be good to go. Now go portscan this honeyPi and see if you get an alert!\n"
-
