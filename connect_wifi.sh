@@ -75,4 +75,6 @@ if [ "$result" == "OK" ]; then
 	echo -n "Assigned address: "
 	ifconfig wlan0 | grep inet | head -n 1 | xargs
 	echo
+else
+	whiptail --msgbox "Cannot connect to ${net_ssid}. Please check your settings." 20 60
 fi

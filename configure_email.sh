@@ -50,14 +50,17 @@ fi
 setup_ssmtp_conf "AuthUser" "$username"
 setup_ssmtp_conf "AuthPass" "$password"
 
+# get e-mail address where all messages will be send
+email=$(whiptail --inputbox "Provide an e-mail address where all messages will be send" 10 60 3>&1 1>&2 2>&3)
+if [ -z $email ]; then
+	exit 1 #cancel has been selected
+fi
+sed -i "s/xemailx/$email/g" psad.conf
+
 #test configuration
 whiptail --yesno "Do you want to test the configured e-mail client ?" 10 60
 test_yesno=$?
 if [ $test_yesno ]; then
-	email=$(whiptail --inputbox "Provide an e-mail address where the message will be send" 10 60 3>&1 1>&2 2>&3)
-	if [ -z $email ]; then
-		exit 1 #cancel has been selected
-	fi
 	echo "Sending a test message to $email..."
 	echo "test from RPi" | ssmtp $email
 	echo "Done"

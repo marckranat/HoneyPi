@@ -81,7 +81,7 @@ sed -i "s/xcheckx/$check/g" psad.conf
 
 ###Wrap up everything and exit
 whiptail --msgbox "Configuration files created. Next we will move those files to the right places." 20 60
-mkdir /root/honeyPi
+mkdir -p /root/honeyPi
 cp blink*.* /root/honeyPi
 cp psad.conf /etc/psad/psad.conf
 iptables --flush
