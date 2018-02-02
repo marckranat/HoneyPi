@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# ask if WiFi must be enabled
+whiptail --yesno "Enable WiFi access ?" 10 60
+if [ $? -ne 0 ]; then
+	exit 0
+fi
+
 #check root
 if [ $UID -ne 0 ]; then
 	echo "Please run this script as root: sudo $0"
@@ -16,7 +22,7 @@ len=${#ssid_arr[@]}
 
 # no available WiFi networks
 if [ 0 -eq $len ]; then
-	echo "No WiFi network to connect to. Please check your settings."
+	whiptail --msgbox "No WiFi network to connect to. Please check your settings." 20 60
 	exit 1
 fi
 
@@ -38,8 +44,7 @@ if [ 1 -ne $len ]; then
 fi
 
 net_ssid=${ssid_arr[$net_idx]}
-echo -n "Provide password for WiFi network $net_ssid: "
-read net_pwd
+net_pwd=$(whiptail --inputbox "Provide password for WiFi network $net_ssid" 10 60 3>&1 1>&2 2>&3)
 
 #remove previous configuration from wpa_supplicant.conf
 SED_CMD="\@network=@d"
@@ -70,4 +75,6 @@ if [ "$result" == "OK" ]; then
 	echo -n "Assigned address: "
 	ifconfig wlan0 | grep inet | head -n 1 | xargs
 	echo
+else
+	whiptail --msgbox "Cannot connect to ${net_ssid}. Please check your settings." 10 60
 fi

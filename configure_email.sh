@@ -6,37 +6,33 @@ if [ $UID -ne 0 ]; then
 	exit 1
 fi
 
-echo "Install required dependences..."
-apt install -y ssmtp
-
 #outgoing e-mail server address
-echo -n "Provide outgoing e-mail server address [smtp.gmail.com]: "
-read mailhub
-if [ -z "$mailhub" ]; then
-	mailhub="smtp.gmail.com"
+mailhub=$(whiptail --inputbox "Provide outgoing e-mail server address" 10 60 "smtp.gmail.com" 3>&1 1>&2 2>&3)
+if [ -z $mailhub ]; then
+	exit 1 #cancel has been selected
 fi
 
 #outgoing server port
-echo -n "Provide outgoing e-mail server port [587]: "
-read port
-if [ -z "$port" ]; then
-	port="587"
+port=$(whiptail --inputbox "Provide outgoing e-mail server port" 10 60 "587" 3>&1 1>&2 2>&3)
+if [ -z $port ]; then
+	exit 1 #cancel has been selected
 fi
 
 #enable STARTTLS
-echo -n "Enable STARTTLS (y/n) [Y]?: "
-read starttls_yesno
-if [ -z "$starttls_yesno" ]; then
-	starttls_yesno="Y"
-fi
+whiptail --yesno "Enable STARTTLS ?" 10 60
+starttls_yesno=$?
 
 #username
-echo -n "Provide username of your e-mail account: "
-read username
+username=$(whiptail --inputbox "Provide username of your e-mail account" 10 60 3>&1 1>&2 2>&3)
+if [ -z $username ]; then
+	exit 1 #cancel has been selected
+fi
 
 #passsword
-echo -n "Provide password for your e-mail account: "
-read password
+password=$(whiptail --inputbox "Provide password for your e-mail account" 10 60 3>&1 1>&2 2>&3)
+if [ -z $password ]; then
+	exit 1 #cancel has been selected
+fi
 
 #setup SSMTP configuration
 function setup_ssmtp_conf() {
@@ -46,7 +42,7 @@ function setup_ssmtp_conf() {
 	sed -i -e "$SED_CMD" /etc/ssmtp/ssmtp.conf
 }
 setup_ssmtp_conf "mailhub" "$mailhub:$port"
-if [ "Y" == "$starttls_yesno" ] || [ "y" == "$starttls_yesno" ]; then
+if [ $starttls_yesno ]; then
 	setup_ssmtp_conf "UseSTARTTLS" "YES"
 else
 	setup_ssmtp_conf "UseSTARTTLS" "NO"
@@ -54,16 +50,24 @@ fi
 setup_ssmtp_conf "AuthUser" "$username"
 setup_ssmtp_conf "AuthPass" "$password"
 
-#test configuration
-echo -n "Do you want to test the configured e-mail client (y/n) [Y]?:"
-read test_yesno
-if [ -z "$test_yesno" ]; then
-	test_yesno="Y"
+# get e-mail address where all messages will be send
+email=$(whiptail --inputbox "Provide an e-mail address where all messages will be send" 10 60 3>&1 1>&2 2>&3)
+if [ -z $email ]; then
+	exit 1 #cancel has been selected
 fi
-if [ "Y" == "$test_yesno" ] || [ "y" == "$test_yesno" ]; then
-	echo -n "Provide an e-mail address where the message will be send: "
-	read email
+sed -i "s/xemailx/$email/g" psad.conf
+
+#test configuration
+whiptail --yesno "Do you want to test the configured e-mail client ?" 10 60
+test_yesno=$?
+if [ $test_yesno ]; then
 	echo "Sending a test message to $email..."
-	echo "test from RPi" | ssmtp $email
-	echo "Done"
+	result=$( { echo "test from RPi" | ssmtp $email; } 2>&1 )
+	if [ "$result" ]; then
+		whiptail --msgbox "Cannot send test message to ${email}. $result. Please check your settings." 10 60
+		echo $result
+	else
+		whiptail --msgbox "A test message has been successfully send to ${email}." 10 60
+		echo "Done"
+	fi
 fi

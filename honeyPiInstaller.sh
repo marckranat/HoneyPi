@@ -33,7 +33,10 @@ fi
 
 
 ####Name the host something enticing ###
-sneakyname=$(whiptail --inputbox "Let's name your honeyPi something enticing like 'SuperSensitiveServer'. Well maybe not that obvious, but you get the idea. Remember, hostnames cannot contain spaces or most special chars. Best to keep it to just alphanumeric and less thaann 24 characters." 20 60 3>&1 1>&2 2>&3)
+sneakyname=$(whiptail --inputbox "Let's name your honeyPi something enticing like 'SuperSensitiveServer'. Well maybe not that obvious, but you get the idea. Remember, hostnames cannot contain spaces or most special chars. Best to keep it to just alphanumeric and less than 24 characters." 20 60 3>&1 1>&2 2>&3)
+if [ -z $sneakyname ]; then
+	exit 1 #cancel has been selected
+fi
 echo $sneakyname > /etc/hostname
 echo "127.0.0.1 $sneakyname" >> /etc/hosts
 
@@ -43,29 +46,21 @@ apt-get -y install psad ssmtp python-twisted iptables-persistent libnotify-bin f
 
 ###Choose Notification Option###
 OPTION=$(whiptail --menu "Choose how you want to get notified:" 20 60 5 "email" "Send me an email" "script" "Execute a script" "blink" "Blink a light on your Raspberry Pi" 3>&2 2>&1 1>&3)
+if [ -z $OPTION ]; then
+	exit 1 #cancel has been selected
+fi
 emailaddy=test@example.com
 enablescript=N
 externalscript=/bin/true
 alertingmethod=ALL
 check=1
 
+# get folder of the current script
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 case $OPTION in
 	email)
-		emailaddy=$(whiptail --inputbox "Mmmkay. Email is a pain to set up. We have defaults for gmail so use that if you have it. What's your email address?" 20 60 3>&1 1>&2 2>&3)
-		sed -i "s/xemailx/$emailaddy/g" ssmtp.conf
-		cp ssmtp.conf /etc/ssmtp/ssmtp.conf
-		check=30
-		whiptail --msgbox "Now, create an 'App Password' for your gmail account (google it if you don't know how). Because we don't want to assign your password to any variables, you have to manually edit the smtp configuration file on the next screen. 'AuthUser' is the first part of your email address before the @. Save and exit the editor and I'll see you back here." 20 60
-		pico /etc/ssmtp/ssmtp.conf
-		whiptail --msgbox "Welcome back! Well Done! Here comes a test message to your email address..." 20 60
-		echo "test message from honeyPi" | ssmtp -vvv $emailaddy
-		if whiptail --yesno "Cool. Now wait a couple minutes and see if that test message shows up. 'Yes' to continue or 'No' to exit and mess with your smtp config." 20 60
- 		then
-  			echo "Continue"
-		else
-			exit 1
- 		fi
-
+		( "$DIR/configure_email.sh" )
 	;;
 	script)
 		externalscript=$(whiptail --inputbox "Enter the full path and name of the script you would like to execute when an alert is triggered:" 20 60 3>&1 1>&2 2>&3)
@@ -79,9 +74,11 @@ case $OPTION in
 	;;
 esac
 
+( "$DIR/connect_wifi.sh" )
+
 ###update vars in configuration files
 sed -i "s/xhostnamex/$sneakyname/g" psad.conf
-sed -i "s/xemailx/$emailaddy/g" psad.conf
+#sed -i "s/xemailx/$emailaddy/g" psad.conf
 sed -i "s/xenablescriptx/$enablescript/g" psad.conf
 sed -i "s/xalertingmethodx/$alertingmethod/g" psad.conf
 sed -i "s=xexternalscriptx=$externalscript=g" psad.conf
@@ -90,7 +87,7 @@ sed -i "s/xcheckx/$check/g" psad.conf
 
 ###Wrap up everything and exit
 whiptail --msgbox "Configuration files created. Next we will move those files to the right places." 20 60
-mkdir /root/honeyPi
+mkdir -p /root/honeyPi
 cp blink*.* /root/honeyPi
 cp psad.conf /etc/psad/psad.conf
 iptables --flush
@@ -107,4 +104,3 @@ cp mattshoneypot.py /root/honeyPi
 python /root/honeyPi/mattshoneypot.py &
 ifconfig
 printf "\n \n ok. should be good to go. Now go portscan this honeyPi and see if you get an alert!\n"
-
