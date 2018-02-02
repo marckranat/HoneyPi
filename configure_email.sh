@@ -6,9 +6,6 @@ if [ $UID -ne 0 ]; then
 	exit 1
 fi
 
-echo "Install required dependences..."
-apt install -y ssmtp
-
 #outgoing e-mail server address
 echo -n "Provide outgoing e-mail server address [smtp.gmail.com]: "
 read mailhub

@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# ask if WiFi must be enabled
+echo -n "Enable WiFi access (y/n) [Y]?: "
+read enable_wifi_yesno
+if [ "N" == "$enable_wifi_yesno" ] || [ "n" == "$enable_wifi_yesno" ]; then
+	exit 0
+fi
+
 #check root
 if [ $UID -ne 0 ]; then
 	echo "Please run this script as root: sudo $0"
