@@ -62,6 +62,9 @@ whiptail --yesno "Do you want to test the configured e-mail client ?" 10 60
 test_yesno=$?
 if [ $test_yesno ]; then
 	echo "Sending a test message to $email..."
-	echo "test from RPi" | ssmtp $email
-	echo "Done"
+	result=$("test from RPi" | ssmtp $email)
+	if [ $result ]; then
+		whiptail --msgbox "Cannot send test message to ${email}. $result. Please check your settings." 20 60
+		echo $result
+	fi
 fi
