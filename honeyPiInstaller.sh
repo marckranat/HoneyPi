@@ -49,9 +49,12 @@ externalscript=/bin/true
 alertingmethod=ALL
 check=1
 
+# get folder of the current script
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 case $OPTION in
 	email)
-		( "configure_email.sh" )
+		( "$DIR/configure_email.sh" )
 	;;
 	script)
 		externalscript=$(whiptail --inputbox "Enter the full path and name of the script you would like to execute when an alert is triggered:" 20 60 3>&1 1>&2 2>&3)
@@ -65,7 +68,7 @@ case $OPTION in
 	;;
 esac
 
-( "connect_wifi.sh" )
+( "$DIR/connect_wifi.sh" )
 
 ###update vars in configuration files
 sed -i "s/xhostnamex/$sneakyname/g" psad.conf
