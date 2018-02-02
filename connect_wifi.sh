@@ -1,9 +1,8 @@
 #!/bin/bash
 
 # ask if WiFi must be enabled
-echo -n "Enable WiFi access (y/n) [Y]?: "
-read enable_wifi_yesno
-if [ "N" == "$enable_wifi_yesno" ] || [ "n" == "$enable_wifi_yesno" ]; then
+whiptail --yesno "Enable WiFi access ?" 10 60
+if [ $? -ne 0 ]; then
 	exit 0
 fi
 
@@ -23,7 +22,7 @@ len=${#ssid_arr[@]}
 
 # no available WiFi networks
 if [ 0 -eq $len ]; then
-	echo "No WiFi network to connect to. Please check your settings."
+	whiptail --msgbox "No WiFi network to connect to. Please check your settings." 20 60
 	exit 1
 fi
 
@@ -45,8 +44,7 @@ if [ 1 -ne $len ]; then
 fi
 
 net_ssid=${ssid_arr[$net_idx]}
-echo -n "Provide password for WiFi network $net_ssid: "
-read net_pwd
+net_pwd=$(whiptail --inputbox "Provide password for WiFi network $net_ssid" 10 60 3>&1 1>&2 2>&3)
 
 #remove previous configuration from wpa_supplicant.conf
 SED_CMD="\@network=@d"
