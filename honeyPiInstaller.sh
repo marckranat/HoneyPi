@@ -34,6 +34,9 @@ fi
 
 ####Name the host something enticing ###
 sneakyname=$(whiptail --inputbox "Let's name your honeyPi something enticing like 'SuperSensitiveServer'. Well maybe not that obvious, but you get the idea. Remember, hostnames cannot contain spaces or most special chars. Best to keep it to just alphanumeric and less than 24 characters." 20 60 3>&1 1>&2 2>&3)
+if [ -z $sneakyname ]; then
+	exit 1 #cancel has been selected
+fi
 echo $sneakyname > /etc/hostname
 echo "127.0.0.1 $sneakyname" >> /etc/hosts
 
@@ -43,6 +46,9 @@ apt-get -y install psad ssmtp python-twisted iptables-persistent libnotify-bin f
 
 ###Choose Notification Option###
 OPTION=$(whiptail --menu "Choose how you want to get notified:" 20 60 5 "email" "Send me an email" "script" "Execute a script" "blink" "Blink a light on your Raspberry Pi" 3>&2 2>&1 1>&3)
+if [ -z $OPTION ]; then
+	exit 1 #cancel has been selected
+fi
 emailaddy=test@example.com
 enablescript=N
 externalscript=/bin/true
