@@ -3,7 +3,7 @@
 #check root
 if [ $UID -ne 0 ]
 then
- echo "Please run this script as root: sudo honeyPI.sh"
+ echo "Please run this script as root: sudo $0"
  exit 1
 fi
 
