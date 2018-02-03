@@ -101,6 +101,10 @@ psad --sig-update
 service psad restart
 cp mattshoneypot.py /root/honeyPi
 (crontab -l 2>/dev/null; echo "@reboot python /root/honeyPi/mattshoneypot.py &") | crontab -
+
+#make sure mattshoneypot.py is not already running
+pgrep python | xargs kill -9
+
 python /root/honeyPi/mattshoneypot.py &
 ifconfig
 printf "\n \n ok. should be good to go. Now go portscan this honeyPi and see if you get an alert!\n"
