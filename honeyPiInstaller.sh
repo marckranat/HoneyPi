@@ -3,7 +3,7 @@
 #check root
 if [ $UID -ne 0 ]
 then
- echo "Please run this script as root: sudo honeyPI.sh"
+ echo "Please run this script as root: sudo $0"
  exit 1
 fi
 
@@ -44,6 +44,11 @@ echo "127.0.0.1 $sneakyname" >> /etc/hosts
 whiptail --infobox "Installing a bunch of software like the log monitoring service and other dependencies...\n" 20 60
 apt-get -y install psad ssmtp python-twisted iptables-persistent libnotify-bin fwsnort
 
+# get folder of the current script
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+( "$DIR/connect_wifi.sh" )
+
 ###Choose Notification Option###
 OPTION=$(whiptail --menu "Choose how you want to get notified:" 20 60 5 "email" "Send me an email" "script" "Execute a script" "blink" "Blink a light on your Raspberry Pi" 3>&2 2>&1 1>&3)
 if [ -z $OPTION ]; then
@@ -54,9 +59,6 @@ enablescript=N
 externalscript=/bin/true
 alertingmethod=ALL
 check=1
-
-# get folder of the current script
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 case $OPTION in
 	email)
@@ -73,8 +75,6 @@ case $OPTION in
 		externalscript="/usr/bin/python /root/honeyPi/blinkonce.py"
 	;;
 esac
-
-( "$DIR/connect_wifi.sh" )
 
 ###update vars in configuration files
 sed -i "s/xhostnamex/$sneakyname/g" psad.conf
@@ -101,6 +101,10 @@ psad --sig-update
 service psad restart
 cp mattshoneypot.py /root/honeyPi
 (crontab -l 2>/dev/null; echo "@reboot python /root/honeyPi/mattshoneypot.py &") | crontab -
+
+#make sure mattshoneypot.py is not already running
+pgrep python | xargs kill -9
+
 python /root/honeyPi/mattshoneypot.py &
 ifconfig
 printf "\n \n ok. should be good to go. Now go portscan this honeyPi and see if you get an alert!\n"
