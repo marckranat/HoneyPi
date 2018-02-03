@@ -42,7 +42,7 @@ function setup_ssmtp_conf() {
 	sed -i -e "$SED_CMD" /etc/ssmtp/ssmtp.conf
 }
 setup_ssmtp_conf "mailhub" "$mailhub:$port"
-if [ $starttls_yesno ]; then
+if [ $starttls_yesno = 0 ]; then
 	setup_ssmtp_conf "UseSTARTTLS" "YES"
 else
 	setup_ssmtp_conf "UseSTARTTLS" "NO"
@@ -60,7 +60,7 @@ sed -i "s/xemailx/$email/g" psad.conf
 #test configuration
 whiptail --yesno "Do you want to test the configured e-mail client ?" 10 60
 test_yesno=$?
-if [ $test_yesno ]; then
+if [ $test_yesno = 0 ]; then
 	echo "Sending a test message to $email..."
 	result=$( { echo "test from RPi" | ssmtp $email; } 2>&1 )
 	if [ "$result" ]; then
