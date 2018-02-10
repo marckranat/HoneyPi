@@ -16,9 +16,11 @@ Wrap up this simplicity in a way that is designed to be deployed on a RaspberryP
 
 ## Installation
 
-You'll need a Raspberry Pi running Rasbian.
+You'll need a Raspberry Pi running Rasbian, a 4gb card is ample. This version is optimised to run a virgin installation of Stretch Lite from https://www.raspberrypi.org/downloads/raspbian/ with wifi not needing to be enabled, but plugged in with ethernet, if you already have wifi enabled, do not run the incuded wifi setup. You can run 
+sudo raspi-config
+to increaase installation to use whole of memory card, pre configure wifi, change password, enable ssh
 
-From the Pi, do this:
+From the Pi to setup the honeypot, do this:
  1. wget https://github.com/marckranat/HoneyPi/archive/master.zip
  2. unzip master.zip
  3. cd HoneyPi-master
